@@ -1,0 +1,416 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BeITMemcached</name>
+    </assembly>
+    <members>
+        <member name="T:BeIT.MemCached.FNV1_32">
+            <summary>
+            Fowler-Noll-Vo hash, variant 1, 32-bit version.
+            http://www.isthe.com/chongo/tech/comp/fnv/
+            </summary>
+        </member>
+        <member name="T:BeIT.MemCached.FNV1a_32">
+            <summary>
+            Fowler-Noll-Vo hash, variant 1a, 32-bit version.
+            http://www.isthe.com/chongo/tech/comp/fnv/
+            </summary>
+        </member>
+        <member name="T:BeIT.MemCached.ModifiedFNV1_32">
+            <summary>
+            Modified Fowler-Noll-Vo hash, 32-bit version.
+            http://home.comcast.net/~bretm/hash/6.html
+            </summary>
+        </member>
+        <member name="T:BeIT.MemCached.MemcachedClient">
+            <summary>
+            Memcached client main class.
+            Use the static methods Setup and GetInstance to setup and get an instance of the client for use.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Setup(System.String,System.String[])">
+            <summary>
+            Static method for creating an instance. This method will throw an exception if the name already exists.
+            </summary>
+            <param name="name">The name of the instance.</param>
+            <param name="servers">A list of memcached servers in standard notation: host:port. 
+            If port is omitted, the default value of 11211 is used. 
+            Both IP addresses and host names are accepted, for example:
+            "localhost", "127.0.0.1", "cache01.example.com:12345", "127.0.0.1:12345", etc.</param>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Exists(System.String)">
+            <summary>
+            Static method which checks if a given named MemcachedClient instance exists.
+            </summary>
+            <param name="name">The name of the instance.</param>
+            <returns></returns>
+        </member>
+        <member name="F:BeIT.MemCached.MemcachedClient.defaultInstance">
+            <summary>
+            Static method for getting the default instance named "default".
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.GetInstance(System.String)">
+            <summary>
+            Static method for getting an instance. 
+            This method will first check for named instances that has been set up programmatically.
+            If no such instance exists, it will check the "beitmemcached" section of the standard 
+            config file and see if it can find configuration info for it there.
+            If that also fails, an exception is thrown.
+            </summary>
+            <param name="name">The name of the instance.</param>
+            <returns>The named instance.</returns>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.hash(System.String)">
+            <summary>
+            Private key hashing method that uses the modified FNV hash.
+            </summary>
+            <param name="key">The key to hash.</param>
+            <returns>The hashed key.</returns>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.hash(System.UInt32)">
+            <summary>
+            Private hashing method for user-supplied hash values.
+            </summary>
+            <param name="hashvalue">The user-supplied hash value to hash.</param>
+            <returns>The hashed value</returns>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.hash(System.String[])">
+            <summary>
+            Private multi-hashing method.
+            </summary>
+            <param name="keys">An array of keys to hash.</param>
+            <returns>An arrays of hashes.</returns>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.hash(System.UInt32[])">
+            <summary>
+            Private multi-hashing method for user-supplied hash values.
+            </summary>
+            <param name="hashvalues">An array of keys to hash.</param>
+            <returns>An arrays of hashes.</returns>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.checkKey(System.String)">
+            <summary>
+            Private key-checking method.
+            Throws an exception if the key does not conform to memcached protocol requirements:
+            It may not contain whitespace, it may not be null or empty, and it may not be longer than 250 characters.
+            </summary>
+            <param name="key">The key to check.</param>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Set(System.String,System.Object)">
+            <summary>
+            This method corresponds to the "set" command in the memcached protocol. 
+            It will unconditionally set the given key to the given value.
+            Using the overloads it is possible to specify an expiry time, either relative as a TimeSpan or 
+            absolute as a DateTime. It is also possible to specify a custom hash to override server selection.
+            This method returns true if the value was successfully set.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Add(System.String,System.Object)">
+            <summary>
+            This method corresponds to the "add" command in the memcached protocol. 
+            It will set the given key to the given value only if the key does not already exist.
+            Using the overloads it is possible to specify an expiry time, either relative as a TimeSpan or 
+            absolute as a DateTime. It is also possible to specify a custom hash to override server selection.
+            This method returns true if the value was successfully added.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Replace(System.String,System.Object)">
+            <summary>
+            This method corresponds to the "replace" command in the memcached protocol. 
+            It will set the given key to the given value only if the key already exists.
+            Using the overloads it is possible to specify an expiry time, either relative as a TimeSpan or 
+            absolute as a DateTime. It is also possible to specify a custom hash to override server selection.
+            This method returns true if the value was successfully replaced.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Append(System.String,System.Object)">
+            <summary>
+            This method corresponds to the "append" command in the memcached protocol.
+            It will append the given value to the given key, if the key already exists.
+            Modifying a key with this command will not change its expiry time.
+            Using the overload it is possible to specify a custom hash to override server selection.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Prepend(System.String,System.Object)">
+            <summary>
+            This method corresponds to the "prepend" command in the memcached protocol.
+            It will prepend the given value to the given key, if the key already exists.
+            Modifying a key with this command will not change its expiry time.
+            Using the overload it is possible to specify a custom hash to override server selection.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Get(System.String)">
+            <summary>
+            This method corresponds to the "get" command in the memcached protocol.
+            It will return the value for the given key. It will return null if the key did not exist,
+            or if it was unable to retrieve the value.
+            If given an array of keys, it will return a same-sized array of objects with the corresponding
+            values.
+            Use the overload to specify a custom hash to override server selection.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Gets(System.String,System.UInt64@)">
+            <summary>
+            This method corresponds to the "gets" command in the memcached protocol.
+            It works exactly like the Get method, but it will also return the cas unique value for the item.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Get(System.String[])">
+            <summary>
+            This method executes a multi-get. It will group the keys by server and execute a single get 
+            for each server, and combine the results. The returned object[] will have the same size as
+            the given key array, and contain either null or a value at each position according to
+            the key on that position.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Gets(System.String[],System.UInt64[]@)">
+            <summary>
+            This method does a multi-gets. It functions exactly like the multi-get method, but it will
+            also return an array of cas unique values as an out parameter.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Delete(System.String)">
+            <summary>
+            This method corresponds to the "delete" command in the memcache protocol.
+            It will immediately delete the given key and corresponding value.
+            Use the overloads to specify an amount of time the item should be in the delete queue on the server,
+            or to specify a custom hash to override server selection.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.SetCounter(System.String,System.UInt64)">
+            <summary>
+            This method sets the key to the given value, and stores it in a format such that the methods
+            Increment and Decrement can be used successfully on it, i.e. decimal representation of a 64-bit unsigned integer. 
+            Using the overloads it is possible to specify an expiry time, either relative as a TimeSpan or 
+            absolute as a DateTime. It is also possible to specify a custom hash to override server selection.
+            This method returns true if the counter was successfully set.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.GetCounter(System.String)">
+            <summary>
+            This method returns the value for the given key as a ulong?, a nullable 64-bit unsigned integer.
+            It returns null if the item did not exist, was not stored properly as per the SetCounter method, or 
+            if it was not able to successfully retrieve the item.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Increment(System.String,System.UInt64)">
+            <summary>
+            This method corresponds to the "incr" command in the memcached protocol.
+            It will increase the item with the given value and return the new value.
+            It will return null if the item did not exist, was not stored properly as per the SetCounter method, or 
+            if it was not able to successfully retrieve the item. 
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Decrement(System.String,System.UInt64)">
+            <summary>
+            This method corresponds to the "decr" command in the memcached protocol.
+            It will decrease the item with the given value and return the new value. If the new value would be 
+            less than 0, it will be set to 0, and the method will return 0.
+            It will return null if the item did not exist, was not stored properly as per the SetCounter method, or 
+            if it was not able to successfully retrieve the item. 
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.FlushAll">
+            <summary>
+            This method corresponds to the "flush_all" command in the memcached protocol.
+            When this method is called, it will send the flush command to all servers, thereby deleting
+            all items on all servers.
+            Use the overloads to set a delay for the flushing. If the parameter staggered is set to true,
+            the client will increase the delay for each server, i.e. the first will flush after delay*0, 
+            the second after delay*1, the third after delay*2, etc. If set to false, all servers will flush 
+            after the same delay.
+            It returns true if the command was successful on all servers.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Stats">
+            <summary>
+            This method corresponds to the "stats" command in the memcached protocol.
+            It will send the stats command to all servers, and it will return a Dictionary for each server
+            containing the results of the command.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Stats(System.String)">
+            <summary>
+            This method corresponds to the "stats" command in the memcached protocol.
+            It will send the stats command to the server that corresponds to the given key, hash or host,
+            and return a Dictionary containing the results of the command.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.MemcachedClient.Status">
+            <summary>
+            This method retrives the status from the serverpool. It checks the connection to all servers
+            and returns usage statistics for each server.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.MemcachedClient.KeyPrefix">
+            <summary>
+            If you specify a key prefix, it will be appended to all keys before they are sent to the memcached server.
+            They key prefix is not used when calculating which server a key belongs to.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.MemcachedClient.SendReceiveTimeout">
+            <summary>
+            The send receive timeout is used to determine how long the client should wait for data to be sent 
+            and received from the server, specified in milliseconds. The default value is 2000.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.MemcachedClient.MinPoolSize">
+            <summary>
+            The min pool size determines the number of sockets the socket pool will keep.
+            Note that no sockets will be created on startup, only on use, so the socket pool will only
+            contain this amount of sockets if the amount of simultaneous requests goes above it.
+            The default value is 5.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.MemcachedClient.MaxPoolSize">
+            <summary>
+            The max pool size determines how large the socket connection pool is allowed to grow.
+            There can be more sockets in use than this amount, but when the extra sockets are returned, they will be destroyed.
+            The default value is 10.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.MemcachedClient.SocketRecycleAge">
+            <summary>
+            If the pool contains more than the minimum amount of sockets, and a socket is returned that is older than this recycle age
+            that socket will be destroyed instead of put back in the pool. This allows the pool to shrink back to the min pool size after a peak in usage.
+            The default value is 30 minutes.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.MemcachedClient.CompressionThreshold">
+            <summary>
+            If an object being stored is larger in bytes than the compression threshold, it will internally be compressed before begin stored,
+            and it will transparently be decompressed when retrieved. Only strings, byte arrays and objects can be compressed.
+            The default value is 1048576 bytes = 1MB.
+            </summary>
+        </member>
+        <member name="T:BeIT.MemCached.PooledSocket">
+            <summary>
+            The PooledSocket class encapsulates a socket connection to a specified memcached server.
+            It contains a buffered stream for communication, and methods for sending and retrieving
+            data from the memcached server, as well as general memcached error checking.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.Dispose">
+            <summary>
+            Disposing of a PooledSocket object in any way causes it to be returned to its SocketPool.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.Close">
+            <summary>
+            This method closes the underlying stream and socket.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.Write(System.String)">
+            <summary>
+            Writes a string to the socket encoded in UTF8 format.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.Write(System.Byte[])">
+            <summary>
+            Writes an array of bytes to the socket and flushes the stream.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.ReadLine">
+            <summary>
+            Reads from the socket until the sequence '\r\n' is encountered, 
+            and returns everything up to but not including that sequence as a UTF8-encoded string
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.ReadResponse">
+            <summary>
+            Reads a response line from the socket, checks for general memcached errors, and returns the line.
+            If an error is encountered, this method will throw an exception.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.Read(System.Byte[])">
+            <summary>
+            Fills the given byte array with data from the socket.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.SkipUntilEndOfLine">
+            <summary>
+            Reads from the socket until the sequence '\r\n' is encountered.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.PooledSocket.Reset">
+            <summary>
+            Resets this PooledSocket by making sure the incoming buffer of the socket is empty.
+            If there was any leftover data, this method return true.
+            </summary>
+        </member>
+        <member name="P:BeIT.MemCached.PooledSocket.IsAlive">
+            <summary>
+            Checks if the underlying socket and stream is connected and available.
+            </summary>
+        </member>
+        <member name="T:BeIT.MemCached.ServerPool">
+            <summary>
+            The ServerPool encapsulates a collection of memcached servers and the associated SocketPool objects.
+            This class contains the server-selection logic, and contains methods for executing a block of code on 
+            a socket from the server corresponding to a given key.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.ServerPool.#ctor(System.String[])">
+            <summary>
+            Internal constructor. This method takes the array of hosts and sets up an internal list of socketpools.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.ServerPool.GetSocketPool(System.UInt32)">
+            <summary>
+            Given an item key hash, this method returns the serverpool which is closest on the server key continuum.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.ServerPool.Execute``1(System.UInt32,``0,BeIT.MemCached.UseSocket{``0})">
+            <summary>
+            This method executes the given delegate on a socket from the server that corresponds to the given hash.
+            If anything causes an error, the given defaultValue will be returned instead.
+            This method takes care of disposing the socket properly once the delegate has executed.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.ServerPool.ExecuteAll(BeIT.MemCached.UseSocket)">
+            <summary>
+            This method executes the given delegate on all servers.
+            </summary>
+        </member>
+        <member name="T:BeIT.MemCached.SocketPool">
+            <summary>
+            The SocketPool encapsulates the list of PooledSockets against one specific host, and contains methods for 
+            acquiring or returning PooledSockets.
+            </summary>
+        </member>
+        <member name="F:BeIT.MemCached.SocketPool.deadEndPointSecondsUntilRetry">
+            <summary>
+            If the host stops responding, we mark it as dead for this amount of seconds, 
+            and we double this for each consecutive failed retry. If the host comes alive
+            again, we reset this to 1 again.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.SocketPool.getEndPoint(System.String)">
+            <summary>
+            This method parses the given string into an IPEndPoint.
+            If the string is malformed in some way, or if the host cannot be resolved, this method will throw an exception.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.SocketPool.Acquire">
+            <summary>
+            Gets a socket from the pool.
+            If there are no free sockets, a new one will be created. If something goes
+            wrong while creating the new socket, this pool's endpoint will be marked as dead
+            and all subsequent calls to this method will return null until the retry interval
+            has passed.
+            </summary>
+        </member>
+        <member name="M:BeIT.MemCached.SocketPool.Return(BeIT.MemCached.PooledSocket)">
+            <summary>
+            Returns a socket to the pool.
+            If the socket is dead, it will be destroyed.
+            If there are more than MaxPoolSize sockets in the pool, it will be destroyed.
+            If there are less than MinPoolSize sockets in the pool, it will always be put back.
+            If there are something inbetween those values, the age of the socket is checked. 
+            If it is older than the SocketRrecycleAge, it is destroyed, otherwise it will be 
+            put back in the pool.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>BeITMemcached.dll</id>
+    <version>1.0.0</version>
+    <title>BeITMemcached.dll</title>
+    <authors>Henrik Schroder,Oliver Kofoed Pedersen</authors>
+    <owners>Henrik Schroder,Oliver Kofoed Pedersen</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>BeITMemcached.dll</description>
+    <summary>BeITMemcached.dll</summary>
+  </metadata>
+</package>
