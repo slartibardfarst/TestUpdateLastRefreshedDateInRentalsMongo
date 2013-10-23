@@ -96,9 +96,15 @@ namespace TestUpdateLastRefreshedDateInRentalsMongo
 
                 var update = Update.Set("listing.last_refreshed", lastRefreshedAsUtc);
 
-                _mongoCollection.Update(query, update, UpdateFlags.Multi);
+                DateTime start = DateTime.Now;
+                var wc = _mongoCollection.Update(query, update, UpdateFlags.Multi);
 
-                _log.DebugFormat("Completed {0}.", listingDataProvider.ProviderId);
+                _log.DebugFormat("Completed {0}, last error: {1}, docs affected: {2}, updated existing: {3}, query time(s): {4}\n", 
+                    listingDataProvider.ProviderId,
+                    wc.LastErrorMessage, 
+                    wc.DocumentsAffected,
+                    wc.UpdatedExisting,
+                    (DateTime.Now-start).TotalSeconds);
             }
 
             _log.Debug("Completed updating last_refreshed");
