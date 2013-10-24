@@ -38,6 +38,7 @@ namespace TestUpdateLastRefreshedDateInRentalsMongo
         private static MongoServer _mongoServer;
         private static MongoDatabase _mongoDB;
         private static MongoCollection _mongoCollection;
+        private static Dictionary<string, DateTime> _lastRefreshTimesCache;
 
 
         private static IEnumerable<ListingDataProvider> GetLastRefreshDateAndTime(DatabasePartition partition)
@@ -70,7 +71,7 @@ namespace TestUpdateLastRefreshedDateInRentalsMongo
 
         private static void DoUpdate()
         {
-        _log.Info("Updating listing.last_refreshed");
+            _log.Info("Updating listing.last_refreshed");
             var results = GetLastRefreshDateAndTime(_mprRedirect.DatabasePartitions.Values.First()).ToList();
             _log.DebugFormat("{0} providers found.", results.Count());
 
@@ -99,19 +100,22 @@ namespace TestUpdateLastRefreshedDateInRentalsMongo
                 DateTime start = DateTime.Now;
                 var wc = _mongoCollection.Update(query, update, UpdateFlags.Multi);
 
-                _log.DebugFormat("Completed {0}, last error: {1}, docs affected: {2}, updated existing: {3}, query time(s): {4}\n", 
+                _log.DebugFormat("Completed {0}, last error: {1}, docs affected: {2}, updated existing: {3}, query time(s): {4}\n",
                     listingDataProvider.ProviderId,
-                    wc.LastErrorMessage, 
+                    wc.LastErrorMessage,
                     wc.DocumentsAffected,
                     wc.UpdatedExisting,
-                    (DateTime.Now-start).TotalSeconds);
+                    (DateTime.Now - start).TotalSeconds);
             }
 
             _log.Debug("Completed updating last_refreshed");
         }
 
+
         static void Main(string[] args)
         {
+            _lastRefreshTimesCache = new Dictionary<string, DateTime>();
+
             BasicConfigurator.Configure();
             _log.Debug("Here is a debug log.");
 
@@ -123,7 +127,9 @@ namespace TestUpdateLastRefreshedDateInRentalsMongo
             _mongoDB = _mongoServer.GetDatabase(ConfigurationManager.AppSettings["MongoRentalDatabase"]);
             _mongoCollection = _mongoDB.GetCollection(ConfigurationManager.AppSettings["MongoRentalCollection"]);
 
+            DateTime refreshAllStartTime = DateTime.Now;
             UpdateLastRefreshedDateInRentalsMongo();
+            _log.DebugFormat("Completed UpdateLastRefreshedDateInRentalsMongo(), duration was: {0}", (DateTime.Now - refreshAllStartTime).ToString());
         }
     }
 }
